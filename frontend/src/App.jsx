@@ -1,4 +1,4 @@
-// src/App.jsx
+// frontend/src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';

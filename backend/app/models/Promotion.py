@@ -1,3 +1,4 @@
+#backend/app/models/promotion.py
 from sqlalchemy import Column, Integer, String, Numeric
 from app.database import Base
 

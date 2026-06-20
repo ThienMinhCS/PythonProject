@@ -1,4 +1,4 @@
-// src/api/flights.js
+// frontend/src/api/flights.js
 import api from './axios';
 
 export const flightAPI = {

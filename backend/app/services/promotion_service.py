@@ -1,4 +1,4 @@
-# backend/app/services/promotion_service.py (thêm mới)
+# backend/app/services/promotion_service.py
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from datetime import datetime

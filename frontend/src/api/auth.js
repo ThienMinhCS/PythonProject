@@ -1,4 +1,4 @@
-// src/api/auth.js
+//frontend/src/api/auth.js
 import api from './axios';
 
 export const authAPI = {

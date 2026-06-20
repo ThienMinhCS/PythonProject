@@ -1,3 +1,4 @@
+#backend/app/models/booking.py
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from app.database import Base
 from datetime import datetime

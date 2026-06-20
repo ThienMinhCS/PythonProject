@@ -1,3 +1,4 @@
+#backend/app/models/passenger_baggage.py
 from sqlalchemy import Column, Integer, Numeric, ForeignKey
 from app.database import Base
 

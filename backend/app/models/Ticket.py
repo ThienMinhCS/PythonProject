@@ -1,3 +1,4 @@
+#backend/app/models/ticket.py
 from sqlalchemy import Column, Integer, String, ForeignKey
 from app.database import Base
 

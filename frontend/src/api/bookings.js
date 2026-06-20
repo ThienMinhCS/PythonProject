@@ -1,4 +1,4 @@
-// src/api/bookings.js
+// frontend/src/api/bookings.js
 import api from './axios';
 
 export const bookingAPI = {

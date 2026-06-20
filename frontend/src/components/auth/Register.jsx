@@ -1,4 +1,4 @@
-// src/components/auth/Register.jsx
+// frontend/src/components/auth/Register.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';

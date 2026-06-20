@@ -1,3 +1,4 @@
+#backend/app/models/seat_class.py
 from sqlalchemy import Column, Integer, String
 from app.database import Base
 

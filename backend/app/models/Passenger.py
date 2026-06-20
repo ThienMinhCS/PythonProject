@@ -1,3 +1,4 @@
+#backend/app/models/passenger.py
 from sqlalchemy import Column, Integer, String, Date
 from app.database import Base
 

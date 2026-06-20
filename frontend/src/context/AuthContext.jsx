@@ -1,4 +1,4 @@
-// src/context/AuthContext.jsx
+// frontend/src/context/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authAPI } from '../api/auth';
 

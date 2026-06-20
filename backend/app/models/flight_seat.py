@@ -1,3 +1,4 @@
+#backend/app/models/flight_seat.py
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric
 from app.database import Base
 
