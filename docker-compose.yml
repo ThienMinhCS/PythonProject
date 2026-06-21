@@ -1,14 +1,39 @@
-services:
+version: '3.8'
 
+services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: airline_sqlserver
-
     environment:
+      SA_PASSWORD: "Airline%402026"
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "Airline@2026"
-
     ports:
       - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
 
-    restart: always
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - sqlserver
+      - redis
+    environment:
+      DATABASE_URL: "mssql+pyodbc://sa:Airline%402026@sqlserver:1433/AirlineBookingDB?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+      REDIS_HOST: redis
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  sqlserver_data:
+  redis_data:
