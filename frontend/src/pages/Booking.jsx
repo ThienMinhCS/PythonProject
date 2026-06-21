@@ -1,4 +1,3 @@
-// frontend/src/pages/Booking.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -15,10 +14,16 @@ import {
   Alert,
   CircularProgress,
   MenuItem,
+  Card,
+  CardContent,
+  Chip,
+  IconButton,
 } from '@mui/material';
-import { flightAPI } from '../api/flights';
-import { bookingAPI } from '../api/bookings';
-import { useAuth } from '../context/AuthContext';
+import { Delete, Add, FlightTakeoff, FlightLand } from '@mui/icons-material';
+import { flightApi } from '../api/flights';
+import { bookingApi } from '../api/bookings';
+import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 const steps = ['Thông tin chuyến bay', 'Thông tin hành khách', 'Xác nhận'];
 
@@ -26,10 +31,14 @@ const Booking = () => {
   const { flightId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  
   const [activeStep, setActiveStep] = useState(0);
   const [flight, setFlight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [seatClass, setSeatClass] = useState('Economy');
+  const [bookingResult, setBookingResult] = useState(null);
+  
   const [passengers, setPassengers] = useState([
     {
       full_name: '',
@@ -40,16 +49,15 @@ const Booking = () => {
       identifier_number: '',
     },
   ]);
-  const [seatClass, setSeatClass] = useState('Economy');
-  const [bookingResult, setBookingResult] = useState(null);
 
   useEffect(() => {
     const fetchFlight = async () => {
       try {
-        const response = await flightAPI.getById(flightId);
-        setFlight(response.data);
+        const response = await flightApi.getById(parseInt(flightId));
+        setFlight(response);
       } catch (err) {
         setError('Không thể tải thông tin chuyến bay');
+        toast.error('Không thể tải thông tin chuyến bay');
       } finally {
         setLoading(false);
       }
@@ -77,11 +85,14 @@ const Booking = () => {
         seat_class: seatClass,
         passengers: passengers,
       };
-      const response = await bookingAPI.create(bookingData);
-      setBookingResult(response.data);
+      const response = await bookingApi.create(bookingData);
+      setBookingResult(response);
       setActiveStep(2);
+      toast.success('🎉 Đặt vé thành công!');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Đặt vé thất bại');
+      const msg = err.response?.data?.detail || 'Đặt vé thất bại';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -113,30 +124,37 @@ const Booking = () => {
     setPassengers(updated);
   };
 
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
   if (loading && activeStep < 2) {
     return (
-      <Container sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+      <Container className="flex justify-center items-center min-h-[60vh]">
         <CircularProgress />
       </Container>
     );
   }
 
-  if (error) {
+  if (error && activeStep < 2) {
     return (
-      <Container sx={{ mt: 4 }}>
-        <Alert severity="error">{error}</Alert>
+      <Container className="py-8">
+        <Alert severity="error" className="rounded-xl">{error}</Alert>
+        <Button variant="outlined" onClick={() => navigate('/search')} className="mt-4">
+          Quay lại tìm kiếm
+        </Button>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Đặt vé
+    <Container maxWidth="md" className="py-8">
+      <Paper className="p-6 md:p-8 rounded-2xl shadow-xl">
+        <Typography variant="h4" className="font-bold text-airline-navy mb-2">
+          ✈️ Đặt vé
         </Typography>
 
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+        <Stepper activeStep={activeStep} className="mb-8">
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -146,220 +164,211 @@ const Booking = () => {
 
         {activeStep === 0 && flight && (
           <Box>
-            <Typography variant="h6">Thông tin chuyến bay</Typography>
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Mã chuyến bay
-                </Typography>
-                <Typography variant="body1">{flight.flight_number}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Hạng ghế
-                </Typography>
-                <TextField
-                  select
-                  fullWidth
-                  size="small"
-                  value={seatClass}
-                  onChange={(e) => setSeatClass(e.target.value)}
-                >
-                  <MenuItem value="Economy">Economy</MenuItem>
-                  <MenuItem value="Premium Economy">Premium Economy</MenuItem>
-                  <MenuItem value="Business">Business</MenuItem>
-                  <MenuItem value="First Class">First Class</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Khởi hành
-                </Typography>
-                <Typography variant="body1">
-                  {new Date(flight.departure_time).toLocaleString('vi-VN')}
-                </Typography>
-                <Typography variant="body2">
-                  {flight.departure_airport} - {flight.departure_city}
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Đến nơi
-                </Typography>
-                <Typography variant="body1">
-                  {new Date(flight.arrival_time).toLocaleString('vi-VN')}
-                </Typography>
-                <Typography variant="body2">
-                  {flight.arrival_airport} - {flight.arrival_city}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">
-                  Máy bay
-                </Typography>
-                <Typography variant="body1">{flight.aircraft_name}</Typography>
-              </Grid>
-            </Grid>
+            <Typography variant="h6" className="font-semibold mb-4">Thông tin chuyến bay</Typography>
+            <Card className="bg-airline-lightblue/30 rounded-xl">
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Box className="flex items-center gap-2">
+                      <FlightTakeoff className="text-airline-blue" />
+                      <Box>
+                        <Typography variant="caption" className="text-gray-500">Khởi hành</Typography>
+                        <Typography variant="body1" className="font-semibold">
+                          {flight.departure_airport} - {flight.departure_city}
+                        </Typography>
+                        <Typography variant="body2">
+                          {new Date(flight.departure_time).toLocaleString('vi-VN')}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Box className="flex items-center gap-2">
+                      <FlightLand className="text-airline-blue" />
+                      <Box>
+                        <Typography variant="caption" className="text-gray-500">Đến nơi</Typography>
+                        <Typography variant="body1" className="font-semibold">
+                          {flight.arrival_airport} - {flight.arrival_city}
+                        </Typography>
+                        <Typography variant="body2">
+                          {new Date(flight.arrival_time).toLocaleString('vi-VN')}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      select
+                      label="Hạng ghế"
+                      fullWidth
+                      value={seatClass}
+                      onChange={(e) => setSeatClass(e.target.value)}
+                    >
+                      <MenuItem value="Economy">Economy - {formatPrice(flight.price)}</MenuItem>
+                      <MenuItem value="Premium Economy">Premium Economy</MenuItem>
+                      <MenuItem value="Business">Business</MenuItem>
+                      <MenuItem value="First Class">First Class</MenuItem>
+                    </TextField>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
           </Box>
         )}
 
         {activeStep === 1 && (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Thông tin hành khách
-            </Typography>
+            <Box className="flex items-center justify-between mb-4">
+              <Typography variant="h6" className="font-semibold">
+                Thông tin hành khách ({passengers.length} người)
+              </Typography>
+              <Button startIcon={<Add />} onClick={addPassenger} variant="outlined" size="small">
+                Thêm hành khách
+              </Button>
+            </Box>
+
             {passengers.map((passenger, index) => (
-              <Paper key={index} sx={{ p: 3, mb: 3, bgcolor: '#f5f5f5' }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Hành khách {index + 1}
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Họ và tên"
-                      required
-                      value={passenger.full_name}
-                      onChange={(e) =>
-                        updatePassenger(index, 'full_name', e.target.value)
-                      }
-                    />
+              <Card key={index} className="mb-4 bg-gray-50 rounded-xl">
+                <CardContent>
+                  <Box className="flex items-center justify-between mb-3">
+                    <Typography variant="subtitle1" className="font-semibold">
+                      Hành khách {index + 1}
+                    </Typography>
+                    {passengers.length > 1 && (
+                      <IconButton size="small" color="error" onClick={() => removePassenger(index)}>
+                        <Delete />
+                      </IconButton>
+                    )}
+                  </Box>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Họ và tên"
+                        required
+                        value={passenger.full_name}
+                        onChange={(e) => updatePassenger(index, 'full_name', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        select
+                        label="Giới tính"
+                        value={passenger.gender}
+                        onChange={(e) => updatePassenger(index, 'gender', e.target.value)}
+                      >
+                        <MenuItem value="Male">Nam</MenuItem>
+                        <MenuItem value="Female">Nữ</MenuItem>
+                        <MenuItem value="Other">Khác</MenuItem>
+                      </TextField>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Ngày sinh"
+                        InputLabelProps={{ shrink: true }}
+                        value={passenger.date_of_birth}
+                        onChange={(e) => updatePassenger(index, 'date_of_birth', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Quốc tịch"
+                        value={passenger.nationality}
+                        onChange={(e) => updatePassenger(index, 'nationality', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        select
+                        label="Loại giấy tờ"
+                        value={passenger.identifier_type}
+                        onChange={(e) => updatePassenger(index, 'identifier_type', e.target.value)}
+                      >
+                        <MenuItem value="Passport">Hộ chiếu</MenuItem>
+                        <MenuItem value="ID Card">CMND/CCCD</MenuItem>
+                        <MenuItem value="Driver License">Bằng lái xe</MenuItem>
+                      </TextField>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Số giấy tờ"
+                        value={passenger.identifier_number}
+                        onChange={(e) => updatePassenger(index, 'identifier_number', e.target.value)}
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Giới tính"
-                      value={passenger.gender}
-                      onChange={(e) =>
-                        updatePassenger(index, 'gender', e.target.value)
-                      }
-                    >
-                      <MenuItem value="Male">Nam</MenuItem>
-                      <MenuItem value="Female">Nữ</MenuItem>
-                      <MenuItem value="Other">Khác</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Ngày sinh"
-                      InputLabelProps={{ shrink: true }}
-                      value={passenger.date_of_birth}
-                      onChange={(e) =>
-                        updatePassenger(index, 'date_of_birth', e.target.value)
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      label="Quốc tịch"
-                      value={passenger.nationality}
-                      onChange={(e) =>
-                        updatePassenger(index, 'nationality', e.target.value)
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Loại giấy tờ"
-                      value={passenger.identifier_type}
-                      onChange={(e) =>
-                        updatePassenger(index, 'identifier_type', e.target.value)
-                      }
-                    >
-                      <MenuItem value="Passport">Hộ chiếu</MenuItem>
-                      <MenuItem value="ID Card">CMND/CCCD</MenuItem>
-                      <MenuItem value="Driver License">Bằng lái xe</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Số giấy tờ"
-                      value={passenger.identifier_number}
-                      onChange={(e) =>
-                        updatePassenger(index, 'identifier_number', e.target.value)
-                      }
-                    />
-                  </Grid>
-                </Grid>
-                {passengers.length > 1 && (
-                  <Button
-                    color="error"
-                    size="small"
-                    onClick={() => removePassenger(index)}
-                    sx={{ mt: 1 }}
-                  >
-                    Xóa hành khách
-                  </Button>
-                )}
-              </Paper>
+                </CardContent>
+              </Card>
             ))}
-            <Button variant="outlined" onClick={addPassenger} sx={{ mt: 1 }}>
-              + Thêm hành khách
-            </Button>
           </Box>
         )}
 
         {activeStep === 2 && bookingResult && (
           <Box>
-            <Alert severity="success" sx={{ mb: 3 }}>
-              Đặt vé thành công!
+            <Alert severity="success" className="mb-6 rounded-xl">
+              🎉 Đặt vé thành công! Mã đặt vé: #{bookingResult.booking_id}
             </Alert>
-            <Typography variant="h6">Thông tin đặt vé</Typography>
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Mã đặt vé
-                </Typography>
-                <Typography variant="body1">{bookingResult.booking_id}</Typography>
+
+            <Typography variant="h6" className="font-semibold mb-4">Chi tiết đặt vé</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Card className="bg-gray-50">
+                  <CardContent>
+                    <Typography variant="caption" className="text-gray-500">Mã đặt vé</Typography>
+                    <Typography variant="h6" className="font-bold text-airline-blue">
+                      #{bookingResult.booking_id}
+                    </Typography>
+                    <Typography variant="caption" className="text-gray-500 block mt-2">Trạng thái</Typography>
+                    <Chip label={bookingResult.status} color="success" />
+                  </CardContent>
+                </Card>
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Tổng tiền
-                </Typography>
-                <Typography variant="h6" color="primary">
-                  {bookingResult.total_amount?.toLocaleString('vi-VN')}đ
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">
-                  Số vé
-                </Typography>
-                {bookingResult.tickets?.map((ticket, i) => (
-                  <Typography key={i} variant="body1">
-                    {ticket}
-                  </Typography>
-                ))}
+              <Grid item xs={12} md={6}>
+                <Card className="bg-gray-50">
+                  <CardContent>
+                    <Typography variant="caption" className="text-gray-500">Tổng tiền</Typography>
+                    <Typography variant="h5" className="font-bold text-airline-blue">
+                      {formatPrice(bookingResult.total_amount)}
+                    </Typography>
+                    <Typography variant="caption" className="text-gray-500 block mt-2">Số vé</Typography>
+                    <Typography>{bookingResult.tickets?.length || 0} vé</Typography>
+                  </CardContent>
+                </Card>
               </Grid>
             </Grid>
-            <Button
-              variant="contained"
-              onClick={() => navigate('/bookings')}
-              sx={{ mt: 3 }}
-            >
-              Xem lịch sử đặt vé
-            </Button>
+
+            <Box className="flex gap-3 mt-6 flex-wrap">
+              <Button variant="contained" onClick={() => navigate('/bookings')} className="bg-airline-blue">
+                Lịch sử đặt vé
+              </Button>
+              <Button variant="outlined" onClick={() => navigate('/')}>
+                Về trang chủ
+              </Button>
+            </Box>
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-          <Button disabled={activeStep === 0} onClick={handleBack}>
-            Quay lại
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleNext}
-            disabled={loading}
-          >
-            {loading ? 'Đang xử lý...' : activeStep === 2 ? 'Hoàn tất' : 'Tiếp theo'}
-          </Button>
-        </Box>
+        {activeStep < 2 && (
+          <Box className="flex justify-between mt-6">
+            <Button disabled={activeStep === 0} onClick={handleBack} variant="outlined">
+              Quay lại
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              disabled={loading}
+              className="bg-airline-blue hover:bg-blue-800"
+            >
+              {loading ? 'Đang xử lý...' : activeStep === 1 ? 'Xác nhận đặt vé' : 'Tiếp theo'}
+            </Button>
+          </Box>
+        )}
       </Paper>
     </Container>
   );

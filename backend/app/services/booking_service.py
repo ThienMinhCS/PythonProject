@@ -172,7 +172,51 @@ def get_booking_by_id(db: Session, booking_id: int, user_id: int) -> Optional[Bo
     if not booking:
         return None
     
-    # Tương tự logic như get_user_bookings nhưng chỉ cho 1 booking
-    # (Code tương tự như trên)
+    # Lấy tickets
+    tickets = db.query(Ticket).filter(Ticket.BookingID == booking.BookingID).all()
     
-    return None  # Placeholder, bạn implement tương tự
+    # Lấy passengers và ticket numbers
+    passengers = []
+    ticket_numbers = []
+    for ticket in tickets:
+        passenger = db.query(Passenger).filter(
+            Passenger.PassengerID == ticket.PassengerID
+        ).first()
+        if passenger:
+            passengers.append(PassengerInfo(
+                full_name=passenger.FullName,
+                gender=passenger.Gender,
+                date_of_birth=passenger.DateOfBirth.strftime("%Y-%m-%d") if passenger.DateOfBirth else "",
+                nationality=passenger.Nationality,
+                identifier_type=passenger.IdentifierType,
+                identifier_number=passenger.IdentifierNumber
+            ))
+            ticket_numbers.append(ticket.TicketNumber)
+    
+    # Lấy flight
+    flight = None
+    if tickets:
+        flight_seat = db.query(FlightSeat).filter(
+            FlightSeat.FlightSeatID == tickets[0].FlightSeatID
+        ).first()
+        if flight_seat:
+            flight = db.query(Flight).filter(
+                Flight.FlightID == flight_seat.FlightID
+            ).first()
+    
+    # Lấy payment
+    payment = db.query(Payment).filter(
+        Payment.BookingID == booking.BookingID
+    ).first()
+    
+    return BookingResponse(
+        booking_id=booking.BookingID,
+        booking_date=booking.BookingDate,
+        status=booking.Status,
+        total_amount=float(payment.Amount) if payment else 0,
+        flight_number=flight.FlightNumber if flight else "",
+        departure_time=flight.DepartureTime if flight else datetime.now(),
+        arrival_time=flight.ArrivalTime if flight else datetime.now(),
+        passengers=passengers,
+        tickets=ticket_numbers
+    )

@@ -1,5 +1,5 @@
 # backend/app/dependencies.py
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status,WebSocket
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -36,3 +36,19 @@ async def get_current_admin_user(
             detail="Admin privileges required"
         )
     return current_user
+
+async def get_current_user_ws(websocket: WebSocket):
+    """Lấy user từ token trong WebSocket connection"""
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=1008)
+        raise HTTPException(status_code=401, detail="Missing token")
+    
+    # Lấy db session
+    db = next(get_db())
+    user = auth_service.get_current_user(db, token)
+    if not user:
+        await websocket.close(code=1008)
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    return user.UserID

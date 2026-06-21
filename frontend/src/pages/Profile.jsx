@@ -1,6 +1,5 @@
-// frontend/src/pages/Profile.jsx
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Container,
   Paper,
@@ -62,31 +61,25 @@ const Profile = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Paper sx={{ p: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+    <Container maxWidth="md" className="py-8">
+      <Paper className="p-6 md:p-8 rounded-2xl shadow-xl">
+        <Box className="flex items-center gap-4 mb-6">
           <Avatar
-            sx={{ width: 64, height: 64, bgcolor: 'secondary.main', mr: 2 }}
+            sx={{ width: 64, height: 64, bgcolor: 'secondary.main', fontSize: 28 }}
           >
             {user?.full_name?.charAt(0)}
           </Avatar>
           <Box>
-            <Typography variant="h5">{user?.full_name}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {user?.email}
-            </Typography>
+            <Typography variant="h5" className="font-bold">{user?.full_name}</Typography>
+            <Typography variant="body2" className="text-gray-500">{user?.email}</Typography>
           </Box>
         </Box>
 
         {message && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {message}
-          </Alert>
+          <Alert severity="success" className="mb-4 rounded-xl">{message}</Alert>
         )}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
+          <Alert severity="error" className="mb-4 rounded-xl">{error}</Alert>
         )}
 
         <form onSubmit={handleSubmit}>
@@ -96,9 +89,7 @@ const Profile = () => {
                 fullWidth
                 label="Họ và tên"
                 value={formData.full_name}
-                onChange={(e) =>
-                  setFormData({ ...formData, full_name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
@@ -114,9 +105,7 @@ const Profile = () => {
                 fullWidth
                 label="Số điện thoại"
                 value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
@@ -125,9 +114,7 @@ const Profile = () => {
                 label="Mật khẩu mới (để trống nếu không đổi)"
                 type="password"
                 value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>
@@ -136,9 +123,7 @@ const Profile = () => {
                 label="Xác nhận mật khẩu mới"
                 type="password"
                 value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               />
             </Grid>
           </Grid>
@@ -148,7 +133,7 @@ const Profile = () => {
             type="submit"
             variant="contained"
             disabled={loading}
-            sx={{ mt: 3 }}
+            className="bg-airline-blue hover:bg-blue-800 text-white font-semibold py-3 rounded-xl mt-4"
           >
             {loading ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
           </Button>

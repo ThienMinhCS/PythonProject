@@ -1,0 +1,18 @@
+{
+    "welcome": "Welcome to Airline Booking System",
+    "booking_confirmed": "Booking confirmed successfully!",
+    "booking_id": "Booking ID: {id}",
+    "flight_number": "Flight: {number}",
+    "departure": "Departure: {time}",
+    "arrival": "Arrival: {time}",
+    "passenger": "Passenger: {name}",
+    "seat": "Seat: {number}",
+    "payment_success": "Payment successful!",
+    "payment_failed": "Payment failed!",
+    "error_email_exists": "Email already registered",
+    "error_invalid_credentials": "Invalid credentials",
+    "error_booking_not_found": "Booking not found",
+    "error_flight_not_found": "Flight not found",
+    "success": "Success",
+    "failed": "Failed"
+}

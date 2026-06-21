@@ -1,0 +1,18 @@
+{
+    "welcome": "Chào mừng đến với Hệ thống Đặt vé Máy bay",
+    "booking_confirmed": "Đặt vé thành công!",
+    "booking_id": "Mã đặt vé: {id}",
+    "flight_number": "Chuyến bay: {number}",
+    "departure": "Khởi hành: {time}",
+    "arrival": "Đến: {time}",
+    "passenger": "Hành khách: {name}",
+    "seat": "Ghế: {number}",
+    "payment_success": "Thanh toán thành công!",
+    "payment_failed": "Thanh toán thất bại!",
+    "error_email_exists": "Email đã được đăng ký",
+    "error_invalid_credentials": "Thông tin đăng nhập không hợp lệ",
+    "error_booking_not_found": "Không tìm thấy đặt vé",
+    "error_flight_not_found": "Không tìm thấy chuyến bay",
+    "success": "Thành công",
+    "failed": "Thất bại"
+}

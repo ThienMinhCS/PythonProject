@@ -2,8 +2,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import auth_router, flights_router, bookings_router, users_router
 from app.config import settings
+
+# Import routers trực tiếp
+from app.routers.auth import router as auth_router
+from app.routers.flights import router as flights_router
+from app.routers.bookings import router as bookings_router
+from app.routers.users import router as users_router
+from app.routers.promotions import router as promotions_router
+from app.routers.payments import router as payments_router
+from app.routers.admin import router as admin_router
 
 # Tạo tables
 Base.metadata.create_all(bind=engine)
@@ -12,19 +20,15 @@ app = FastAPI(
     title=settings.APP_NAME,
     description="Flight Ticket Booking API",
     version=settings.APP_VERSION,
-    debug=settings.DEBUG
+    debug=settings.DEBUG,
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# 👉 SỬA CORS - CHO PHÉP FRONTEND
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Vite frontend
-        "http://localhost:3000",   # React default
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-        "*"  # Cho phép tất cả (chỉ dùng khi dev)
-    ],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,9 +39,12 @@ app.include_router(auth_router)
 app.include_router(flights_router)
 app.include_router(bookings_router)
 app.include_router(users_router)
+app.include_router(promotions_router)
+app.include_router(payments_router)
+app.include_router(admin_router)
 
 @app.get("/")
-def root():
+async def root():
     return {
         "message": "Airline Booking API is running",
         "version": settings.APP_VERSION,
@@ -45,7 +52,7 @@ def root():
     }
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {"status": "healthy"}
 
 if __name__ == "__main__":

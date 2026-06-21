@@ -10,6 +10,11 @@ services:
       - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Airline%402026" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -17,6 +22,11 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   backend:
     build:
@@ -25,8 +35,10 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - sqlserver
-      - redis
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       DATABASE_URL: "mssql+pyodbc://sa:Airline%402026@sqlserver:1433/AirlineBookingDB?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
       REDIS_HOST: redis

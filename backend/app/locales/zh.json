@@ -1,0 +1,18 @@
+{
+    "welcome": "欢迎来到航空订票系统",
+    "booking_confirmed": "订票成功！",
+    "booking_id": "订票号: {id}",
+    "flight_number": "航班: {number}",
+    "departure": "出发: {time}",
+    "arrival": "到达: {time}",
+    "passenger": "乘客: {name}",
+    "seat": "座位: {number}",
+    "payment_success": "支付成功！",
+    "payment_failed": "支付失败！",
+    "error_email_exists": "邮箱已被注册",
+    "error_invalid_credentials": "用户名或密码错误",
+    "error_booking_not_found": "未找到订票记录",
+    "error_flight_not_found": "未找到航班",
+    "success": "成功",
+    "failed": "失败"
+}

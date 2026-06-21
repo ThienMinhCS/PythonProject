@@ -1,77 +1,61 @@
-// frontend/src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './contexts/AuthContext';
 
-import { AuthProvider, useAuth } from './context/AuthContext';
+// Components
 import Header from './components/common/Header';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import Home from './pages/Home';
-import Search from './pages/Search';
-import Booking from './pages/Booking';
-import Profile from './pages/Profile';
-import BookingHistory from './pages/BookingHistory';
-import { Box, CircularProgress } from '@mui/material';
+import Footer from './components/common/Footer';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
-// Component bảo vệ route
-const PrivateRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-  
-  return user ? children : <Navigate to="/login" />;
-};
+// Pages
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import SearchFlights from './pages/SearchFlights';
+import Booking from './pages/Booking';
+import MyBookings from './pages/MyBookings';
+import Profile from './pages/Profile';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <BrowserRouter>
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col bg-gray-50">
           <Header />
-          <Box sx={{ flex: 1 }}>
+          <main className="flex-grow">
             <Routes>
+              {/* Public */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/search" element={<Search />} />
-              <Route 
-                path="/booking/:flightId" 
-                element={
-                  <PrivateRoute>
-                    <Booking />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/bookings" 
-                element={
-                  <PrivateRoute>
-                    <BookingHistory />
-                  </PrivateRoute>
-                } 
-              />
+              <Route path="/search" element={<SearchFlights />} />
+
+              {/* Protected */}
+              <Route path="/booking/:flightId" element={
+                <ProtectedRoute>
+                  <Booking />
+                </ProtectedRoute>
+              } />
+              <Route path="/bookings" element={
+                <ProtectedRoute>
+                  <MyBookings />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+
+              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
-          </Box>
-        </Box>
-        <ToastContainer position="top-right" />
-      </BrowserRouter>
-    </AuthProvider>
+          </main>
+          <Footer />
+          <Toaster position="top-right" />
+        </div>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
